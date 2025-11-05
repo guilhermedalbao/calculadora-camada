@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calculadora de Camada Topográfica</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h2>Calculadora de Camada Topográfica</h2>
+
+    <label>Altura atual (m):</label>
+    <input type="number" id="altura" step="0.01" placeholder="Ex: 1.00">
+
+    <label>Distância atual até o bordo (m):</label>
+    <input type="number" id="distancia" step="0.01" placeholder="Ex: 2.00">
+
+    <label>Inclinação (%)</label>
+    <input type="number" id="inclinacao" step="0.01" placeholder="Ex: 50">
+
+    <label>Camada a adicionar (m):</label>
+    <input type="number" id="camada" step="0.01" placeholder="Ex: 0.25">
+
+    <label>Sobra da estaca (m):</label>
+    <input type="number" id="sobra" step="0.01" placeholder="Ex: 0.20">
+
+    <button onclick="calcular()">Calcular</button>
+
+    <div class="resultado">
+      <p><strong>Nova altura projetada:</strong> <span id="novaAltura">-</span> m</p>
+      <p><strong>Novo afastamento:</strong> <span id="novoAfastamento">-</span> m</p>
+      <p><strong>Distância até o bordo considerando a sobra:</strong> <span id="distanciaFinal">-</span> m</p>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
