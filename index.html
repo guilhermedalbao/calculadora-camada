@@ -73,133 +73,41 @@
   <div class="resultado" id="resultado" style="display:none"></div>
 
 <script>
-  // Preencher data automática
-  (function setDate(){
-    const now = new Date();
-    // formato dd/mm/yyyy HH:MM
-    const pad = n => String(n).padStart(2,'0');
-    const s = `${pad(now.getDate())}/${pad(now.getMonth()+1)}/${now.getFullYear()} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
-    document.getElementById('dataAtual').value = s;
-  })();
-
-  // guarda último resultado para salvar
-  let ultimoResultado = null;
-
-  function validarCamposBasicos(vals) {
-    // Verifica NaN e inclinação não zero
-    const required = ['altura','inclinacao','camada','folga','ladoBaixo','ladoAlto'];
-    for (const k of required) {
-      if (isNaN(vals[k])) {
-        return `Preencha corretamente o campo ${k}.`;
-      }
-    }
-    if (vals['inclinacao'] === 0) return 'Inclinação não pode ser zero.';
-    return null;
+ async function salvar() {
+  if (!ultimoResultado) {
+    alert('Calcule antes de salvar.');
+    return;
   }
 
-  function calcularValores(vals) {
-    // vals: objeto com altura,inclinacao,camada,folga,ladoBaixo,ladoAlto
-    const diferencaCota = vals.ladoAlto - vals.ladoBaixo; // maior - menor
-    const novaAltura = vals.altura - vals.camada;
-    const novaDist = novaAltura / (vals.inclinacao / 100);
-    const distFinal = novaDist + vals.folga;
-    const valorLadoBaixo = vals.ladoBaixo - novaAltura;
-    const valorLadoAlto = vals.ladoAlto - novaAltura;
+  const WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbxYioqg66kN0s-MgwutzXDM8DEZCC2VYjBncHIwcXO2icXl1IrilRu00Iu6YJjYm1YU/exec'; // seu link
 
-    return {
-      diferencaCota, novaAltura, novaDist, distFinal, valorLadoBaixo, valorLadoAlto
-    };
-  }
+  document.getElementById('btnSalvar').disabled = true;
+  document.getElementById('btnSalvar').innerText = 'Salvando...';
 
-  function handleCalcular() {
-    // lê entradas
-    const vals = {
-      altura: parseFloat(document.getElementById('altura').value),
-      inclinacao: parseFloat(document.getElementById('inclinacao').value),
-      camada: parseFloat(document.getElementById('camada').value),
-      folga: parseFloat(document.getElementById('folga').value),
-      ladoBaixo: parseFloat(document.getElementById('ladoBaixo').value),
-      ladoAlto: parseFloat(document.getElementById('ladoAlto').value)
-    };
+  try {
+    await fetch(WEBAPP_URL, {
+      method: 'POST',
+      mode: 'no-cors', // 🔹 CORRIGIDO AQUI
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(ultimoResultado)
+    });
 
-    const err = validarCamposBasicos(vals);
-    if (err) {
-      document.getElementById('resultado').style.display = 'block';
-      document.getElementById('resultado').innerHTML = `<p style="color:red">${err}</p>`;
-      document.getElementById('btnSalvar').disabled = true;
-      ultimoResultado = null;
-      return;
-    }
-
-    const res = calcularValores(vals);
-    // montar exibição
-    document.getElementById('resultado').style.display = 'block';
-    document.getElementById('resultado').innerHTML = `
-      <p><strong>Diferença de cota (Δh):</strong> ${res.diferencaCota.toFixed(3)} m</p>
-      <p><strong>Nova altura projetada:</strong> ${res.novaAltura.toFixed(3)} m</p>
-      <p><strong>Nova distância até o bordo:</strong> ${res.novaDist.toFixed(3)} m</p>
-      <p><strong>Distância final com folga:</strong> ${res.distFinal.toFixed(3)} m</p>
-      <p><strong>Valor lado baixo:</strong> ${res.valorLadoBaixo.toFixed(3)} m</p>
-      <p><strong>Valor lado alto:</strong> ${res.valorLadoAlto.toFixed(3)} m</p>
-    `;
-    // salvar objeto completo para enviar depois
-    ultimoResultado = {
-      data: document.getElementById('dataAtual').value,
-      estaca: document.getElementById('estaca').value || '',
-      pano: document.getElementById('pano').value || '',
-      altura: vals.altura,
-      inclinacao: vals.inclinacao,
-      camada: vals.camada,
-      folga: vals.folga,
-      ladoBaixo: vals.ladoBaixo,
-      ladoAlto: vals.ladoAlto,
-      diferencaCota: res.diferencaCota,
-      novaAltura: res.novaAltura,
-      novaDist: res.novaDist,
-      distFinal: res.distFinal,
-      valorLadoBaixo: res.valorLadoBaixo,
-      valorLadoAlto: res.valorLadoAlto
-    };
-    // habilita botão salvar
+    alert('Dados enviados para a planilha com sucesso!');
+    ultimoResultado = null;
+    document.getElementById('btnSalvar').innerText = 'Salvar na planilha';
+    document.getElementById('btnSalvar').disabled = true;
+  } catch (err) {
+    alert('Erro ao salvar: ' + err.message);
+    document.getElementById('btnSalvar').innerText = 'Salvar na planilha';
     document.getElementById('btnSalvar').disabled = false;
   }
+}
 
-  // Função salvar: envia via POST para o Apps Script Web App
-  async function salvar() {
-    if (!ultimoResultado) {
-      alert('Calcule antes de salvar.');
-      return;
-    }
-
-    const WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbxYioqg66kN0s-MgwutzXDM8DEZCC2VYjBncHIwcXO2icXl1IrilRu00Iu6YJjYm1YU/exec'; // <<< substitua pela URL do seu Apps Script web app
-
-    document.getElementById('btnSalvar').disabled = true;
-    document.getElementById('btnSalvar').innerText = 'Salvando...';
-
-    try {
-      const resp = await fetch(WEBAPP_URL, {
-        method: 'POST',
-        mode: 'cors',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(ultimoResultado)
-      });
-      const text = await resp.text();
-      if (!resp.ok) throw new Error(text || resp.statusText);
-      alert('Dados salvos com sucesso na planilha.');
-      // opcional: limpar últimoResultado e botão
-      ultimoResultado = null;
-      document.getElementById('btnSalvar').innerText = 'Salvar na planilha';
-      document.getElementById('btnSalvar').disabled = true;
-    } catch (err) {
-      alert('Erro ao salvar: ' + err.message);
-      document.getElementById('btnSalvar').innerText = 'Salvar na planilha';
-      document.getElementById('btnSalvar').disabled = false;
-    }
-  }
 </script>
 
 </body>
 </html>
+
 
 
 
