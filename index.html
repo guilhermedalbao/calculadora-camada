@@ -5,25 +5,56 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Calculadora de Camadas</title>
   <style>
-    body { font-family: Arial, sans-serif; max-width: 700px; margin: 30px auto; background:#f7f9fb; padding:20px; border-radius:10px; box-shadow:0 0 12px rgba(0,0,0,0.08); }
-    h1{ text-align:center;color:#004d7a;margin-bottom:8px; }
-    label{ display:block; margin-top:12px; font-weight:600; }
-    input, select { width:100%; padding:8px; margin-top:6px; box-sizing:border-box; border-radius:6px; border:1px solid #cfcfcf; font-size:14px; }
-    .row { display:flex; gap:12px; }
-    .row > div { flex:1; }
-    button { margin-top:14px; width:100%; padding:10px; background:#0077b6; color:#fff; border:none; border-radius:6px; font-size:16px; cursor:pointer; }
-    button.secondary { background:#28a745; margin-top:8px; }
-    button:disabled { opacity:0.6; cursor:not-allowed; }
-    .resultado { margin-top:18px; background:#e9f7ff; padding:12px; border-radius:8px; border-left:4px solid #0077b6; }
-    .resultado p{ margin:6px 0; font-size:15px; }
-    .small { font-size:13px; color:#666; margin-top:6px; }
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 700px;
+      margin: 30px auto;
+      background: #f7f9fb;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 12px rgba(0,0,0,0.08);
+    }
+    h1 { text-align: center; color: #004d7a; margin-bottom: 8px; }
+    label { display: block; margin-top: 12px; font-weight: 600; }
+    input, select {
+      width: 100%;
+      padding: 8px;
+      margin-top: 6px;
+      box-sizing: border-box;
+      border-radius: 6px;
+      border: 1px solid #cfcfcf;
+      font-size: 14px;
+    }
+    .row { display: flex; gap: 12px; }
+    .row > div { flex: 1; }
+    button {
+      margin-top: 14px;
+      width: 100%;
+      padding: 10px;
+      background: #0077b6;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    button.secondary { background: #28a745; margin-top: 8px; }
+    button:disabled { opacity: 0.6; cursor: not-allowed; }
+    .resultado {
+      margin-top: 18px;
+      background: #e9f7ff;
+      padding: 12px;
+      border-radius: 8px;
+      border-left: 4px solid #0077b6;
+    }
+    .resultado p { margin: 6px 0; font-size: 15px; }
+    .small { font-size: 13px; color: #666; margin-top: 6px; }
   </style>
 </head>
 <body>
 
   <h1>Calculadora de Camadas</h1>
 
-  <!-- Dados de identificação -->
   <div class="row">
     <div>
       <label>Data (automática):</label>
@@ -73,42 +104,103 @@
   <div class="resultado" id="resultado" style="display:none"></div>
 
 <script>
- async function salvar() {
-  if (!ultimoResultado) {
-    alert('Calcule antes de salvar.');
-    return;
+  // Preencher data automática
+  (function setDate(){
+    const now = new Date();
+    const pad = n => String(n).padStart(2,'0');
+    const s = `${pad(now.getDate())}/${pad(now.getMonth()+1)}/${now.getFullYear()} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
+    document.getElementById('dataAtual').value = s;
+  })();
+
+  let ultimoResultado = null;
+
+  function validarCamposBasicos(vals) {
+    const required = ['altura','inclinacao','camada','folga','ladoBaixo','ladoAlto'];
+    for (const k of required) {
+      if (isNaN(vals[k])) return `Preencha corretamente o campo ${k}.`;
+    }
+    if (vals['inclinacao'] === 0) return 'Inclinação não pode ser zero.';
+    return null;
   }
 
-  const WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbxYioqg66kN0s-MgwutzXDM8DEZCC2VYjBncHIwcXO2icXl1IrilRu00Iu6YJjYm1YU/exec'; // seu link
+  function calcularValores(vals) {
+    const diferencaCota = vals.ladoAlto - vals.ladoBaixo;
+    const novaAltura = vals.altura - vals.camada;
+    const novaDist = novaAltura / (vals.inclinacao / 100);
+    const distFinal = novaDist + vals.folga;
+    const valorLadoBaixo = vals.ladoBaixo - novaAltura;
+    const valorLadoAlto = vals.ladoAlto - novaAltura;
 
-  document.getElementById('btnSalvar').disabled = true;
-  document.getElementById('btnSalvar').innerText = 'Salvando...';
+    return { diferencaCota, novaAltura, novaDist, distFinal, valorLadoBaixo, valorLadoAlto };
+  }
 
-  try {
-    await fetch(WEBAPP_URL, {
-      method: 'POST',
-      mode: 'no-cors', // 🔹 CORRIGIDO AQUI
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(ultimoResultado)
-    });
+  function handleCalcular() {
+    const vals = {
+      altura: parseFloat(document.getElementById('altura').value),
+      inclinacao: parseFloat(document.getElementById('inclinacao').value),
+      camada: parseFloat(document.getElementById('camada').value),
+      folga: parseFloat(document.getElementById('folga').value),
+      ladoBaixo: parseFloat(document.getElementById('ladoBaixo').value),
+      ladoAlto: parseFloat(document.getElementById('ladoAlto').value)
+    };
 
-    alert('Dados enviados para a planilha com sucesso!');
-    ultimoResultado = null;
-    document.getElementById('btnSalvar').innerText = 'Salvar na planilha';
-    document.getElementById('btnSalvar').disabled = true;
-  } catch (err) {
-    alert('Erro ao salvar: ' + err.message);
-    document.getElementById('btnSalvar').innerText = 'Salvar na planilha';
+    const err = validarCamposBasicos(vals);
+    const resultDiv = document.getElementById('resultado');
+    if (err) {
+      resultDiv.style.display = 'block';
+      resultDiv.innerHTML = `<p style="color:red">${err}</p>`;
+      document.getElementById('btnSalvar').disabled = true;
+      ultimoResultado = null;
+      return;
+    }
+
+    const res = calcularValores(vals);
+    resultDiv.style.display = 'block';
+    resultDiv.innerHTML = `
+      <p><strong>Diferença de cota (Δh):</strong> ${res.diferencaCota.toFixed(3)} m</p>
+      <p><strong>Nova altura projetada:</strong> ${res.novaAltura.toFixed(3)} m</p>
+      <p><strong>Nova distância até o bordo:</strong> ${res.novaDist.toFixed(3)} m</p>
+      <p><strong>Distância final com folga:</strong> ${res.distFinal.toFixed(3)} m</p>
+      <p><strong>Valor lado baixo:</strong> ${res.valorLadoBaixo.toFixed(3)} m</p>
+      <p><strong>Valor lado alto:</strong> ${res.valorLadoAlto.toFixed(3)} m</p>
+    `;
+
+    ultimoResultado = {
+      data: document.getElementById('dataAtual').value,
+      estaca: document.getElementById('estaca').value || '',
+      pano: document.getElementById('pano').value || '',
+      ...vals,
+      ...res
+    };
+
     document.getElementById('btnSalvar').disabled = false;
   }
-}
 
+  // Função de envio (com no-cors)
+  async function salvar() {
+    if (!ultimoResultado) return alert('Calcule antes de salvar.');
+
+    const WEBAPP_URL = "https://script.google.com/macros/s/SEU_ID_DO_SCRIPT/exec"; // <-- coloque seu link do Apps Script aqui
+
+    document.getElementById('btnSalvar').disabled = true;
+    document.getElementById('btnSalvar').innerText = 'Enviando...';
+
+    try {
+      await fetch(WEBAPP_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(ultimoResultado)
+      });
+      alert("Dados enviados com sucesso!");
+    } catch (err) {
+      alert("Erro ao salvar: " + err.message);
+    }
+
+    document.getElementById('btnSalvar').innerText = 'Salvar na planilha';
+    document.getElementById('btnSalvar').disabled = true;
+  }
 </script>
 
 </body>
 </html>
-
-
-
-
-
