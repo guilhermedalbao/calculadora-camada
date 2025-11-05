@@ -78,7 +78,7 @@
   <input type="number" id="ladoBaixo" step="0.01">
 
   <label>Leitura lado alto (m):</label>
-  <input type="number" id="ladoAlto" step 0.01">
+  <input type="number" id="ladoAlto" step="0.01">
 
   <button onclick="calcular()">Calcular</button>
 
@@ -90,8 +90,8 @@
       const inclinacao = parseFloat(document.getElementById('inclinacao').value);
       const camada = parseFloat(document.getElementById('camada').value);
       const folga = parseFloat(document.getElementById('folga').value);
-      const ladoBaixo = parseFloat(document.getElementById('cotaMenor').value);
-      const ladoAlto = parseFloat(document.getElementById('cotaMaior').value);
+      const ladoBaixo = parseFloat(document.getElementById('ladoBaixo').value);
+      const ladoAlto = parseFloat(document.getElementById('ladoAlto').value);
 
       if (isNaN(altura) || isNaN(inclinacao) || isNaN(camada) || isNaN(folga) || isNaN(ladoBaixo) || isNaN(ladoAlto)) {
         alert("Por favor, preencha todos os campos numéricos.");
@@ -107,7 +107,7 @@
       // Nova distância até o bordo (calculada pela proporção da inclinação)
       const novaDist = novaAltura / (inclinacao / 100);
 
-      // Distância final com folga (agora somando a folga)
+      // Distância final com folga (somando a folga)
       const distFinal = novaDist + folga;
 
       // Valor das cotas ajustadas (Leitura - nova altura)
@@ -116,14 +116,4 @@
 
       document.getElementById('resultado').innerHTML = `
         <p><strong>Diferença de cota (Δh):</strong> ${diferencaCota.toFixed(2)} m</p>
-        <p><strong>Nova altura projetada:</strong> ${novaAltura.toFixed(2)} m</p>
-        <p><strong>Nova distância até o bordo:</strong> ${novaDist.toFixed(2)} m</p>
-        <p><strong>Distância final com folga:</strong> ${distFinal.toFixed(2)} m</p>
-        <p><strong>Valor Lado Baixo:</strong> ${valorLadoBaixo.toFixed(2)} m</p>
-        <p><strong>Valor Lado Alto:</strong> ${valorLadoAlto.toFixed(2)} m</p>
-      `;
-    }
-  </script>
-
-</body>
-</html>
+        <p><strong>Nova altura projetada:</strong> ${novaAltura.toFixed(2)} m</p
