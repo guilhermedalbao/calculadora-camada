@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Calculadora de Camadas Topográficas</title>
+  <title>Calculadora de Camadas</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -89,7 +89,6 @@
 
   <script>
     function calcular() {
-      const distBordo = parseFloat(document.getElementById('distBordo').value);
       const altura = parseFloat(document.getElementById('altura').value);
       const inclinacao = parseFloat(document.getElementById('inclinacao').value);
       const camada = parseFloat(document.getElementById('camada').value);
@@ -97,7 +96,7 @@
       const cotaMenor = parseFloat(document.getElementById('cotaMenor').value);
       const cotaMaior = parseFloat(document.getElementById('cotaMaior').value);
 
-      if (isNaN(distBordo) || isNaN(altura) || isNaN(inclinacao) || isNaN(camada) || isNaN(folga) || isNaN(cotaMenor) || isNaN(cotaMaior)) {
+      if (isNaN(altura) || isNaN(inclinacao) || isNaN(camada) || isNaN(folga) || isNaN(cotaMenor) || isNaN(cotaMaior)) {
         alert("Por favor, preencha todos os campos numéricos.");
         return;
       }
@@ -112,7 +111,7 @@
       const novaDist = novaAltura / (inclinacao / 100);
 
       // Distância final com folga
-      const distFinal = novaDist - folga;
+      const distFinal = novaDist + folga;
 
       // Valor das cotas ajustadas (Leitura - nova altura)
       const valorCotaMenor = cotaMenor - novaAltura;
@@ -132,3 +131,4 @@
 
 </body>
 </html>
+
