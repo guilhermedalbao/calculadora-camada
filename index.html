@@ -176,40 +176,21 @@
     document.getElementById('btnSalvar').disabled = false;
   }
 
-  // Função de envio (com no-cors)
   async function salvar() {
-  if (!ultimoResultado) return alert('Calcule antes de salvar.');
+    if (!ultimoResultado) return alert('Calcule antes de salvar.');
 
-  const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbwxKkZO6-PP-gqgMokxmhwtJ6b63RyX3e1JJ1RHVfxrP1K8VjP7wGAS5IJq-Aiwu2Mj/exec"; // coloque aqui o link do seu Web App
+    const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbwxKkZO6-PP-gqgMokxmhwtJ6b63RyX3e1JJ1RHVfxrP1K8VjP7wGAS5IJq-Aiwu2Mj/exec"; // coloque aqui o link do seu Web App
 
-  document.getElementById('btnSalvar').disabled = true;
-  document.getElementById('btnSalvar').innerText = 'Enviando...';
-
-  try {
-    // envio POST para o Web App
-    await fetch(WEBAPP_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(ultimoResultado)
-    });
-
-    alert("Dados enviados com sucesso!");
-  } catch (err) {
-    alert("Erro ao salvar: " + err.message);
-  }
-
-  document.getElementById('btnSalvar').innerText = 'Salvar na planilha';
-  document.getElementById('btnSalvar').disabled = true;
-}
-
+    document.getElementById('btnSalvar').disabled = true;
+    document.getElementById('btnSalvar').innerText = 'Enviando...';
 
     try {
       await fetch(WEBAPP_URL, {
         method: "POST",
-        mode: "no-cors",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(ultimoResultado)
       });
+
       alert("Dados enviados com sucesso!");
     } catch (err) {
       alert("Erro ao salvar: " + err.message);
@@ -222,7 +203,3 @@
 
 </body>
 </html>
-
-
-
-
