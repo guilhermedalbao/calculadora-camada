@@ -1,208 +1,73 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Calculadora de Camadas</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      max-width: 700px;
-      margin: 30px auto;
-      background: #f7f9fb;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 0 12px rgba(0,0,0,0.08);
-    }
-    h1 { text-align: center; color: #004d7a; margin-bottom: 8px; }
-    label { display: block; margin-top: 12px; font-weight: 600; }
-    input, select {
-      width: 100%;
-      padding: 8px;
-      margin-top: 6px;
-      box-sizing: border-box;
-      border-radius: 6px;
-      border: 1px solid #cfcfcf;
-      font-size: 14px;
-    }
-    .row { display: flex; gap: 12px; }
-    .row > div { flex: 1; }
-    button {
-      margin-top: 14px;
-      width: 100%;
-      padding: 10px;
-      background: #0077b6;
-      color: #fff;
-      border: none;
-      border-radius: 6px;
-      font-size: 16px;
-      cursor: pointer;
-    }
-    button.secondary { background: #28a745; margin-top: 8px; }
-    button:disabled { opacity: 0.6; cursor: not-allowed; }
-    .resultado {
-      margin-top: 18px;
-      background: #e9f7ff;
-      padding: 12px;
-      border-radius: 8px;
-      border-left: 4px solid #0077b6;
-    }
-    .resultado p { margin: 6px 0; font-size: 15px; }
-    .small { font-size: 13px; color: #666; margin-top: 6px; }
-  </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Formulário de Envio</title>
 </head>
 <body>
+  <h1>Enviar Dados para Google Sheets</h1>
 
-  <h1>Calculadora de Camadas</h1>
+  <form id="meuFormulario">
+    <input id="data" placeholder="Data"><br>
+    <input id="estaca" placeholder="Estaca"><br>
+    <input id="pano" placeholder="Pano"><br>
+    <input id="altura" placeholder="Altura"><br>
+    <input id="inclinacao" placeholder="Inclinação"><br>
+    <input id="camada" placeholder="Camada"><br>
+    <input id="folga" placeholder="Folga"><br>
+    <input id="ladoBaixo" placeholder="Lado Baixo"><br>
+    <input id="ladoAlto" placeholder="Lado Alto"><br>
+    <input id="diferencaCota" placeholder="Diferença Cota"><br>
+    <input id="novaAltura" placeholder="Nova Altura"><br>
+    <input id="novaDist" placeholder="Nova Distância"><br>
+    <input id="distFinal" placeholder="Distância Final"><br>
+    <input id="valorLadoBaixo" placeholder="Valor Lado Baixo"><br>
+    <input id="valorLadoAlto" placeholder="Valor Lado Alto"><br>
+    <button type="submit">Enviar</button>
+  </form>
 
-  <div class="row">
-    <div>
-      <label>Data (automática):</label>
-      <input type="text" id="dataAtual" readonly>
-    </div>
-    <div>
-      <label>Estaca:</label>
-      <input type="text" id="estaca" placeholder="Ex: 12+345">
-    </div>
-  </div>
+  <script>
+    const form = document.getElementById('meuFormulario');
 
-  <label>Pano (marcação):</label>
-  <input type="text" id="pano" placeholder="Ex: Pano 25">
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault(); // evita recarregar a página
 
-  <label>Altura medida (m):</label>
-  <input type="number" id="altura" step="0.01" placeholder="Ex: 1.00">
+      // Monta os dados a enviar
+      const dados = {
+        data: document.getElementById("data").value,
+        estaca: document.getElementById("estaca").value,
+        pano: document.getElementById("pano").value,
+        altura: document.getElementById("altura").value,
+        inclinacao: document.getElementById("inclinacao").value,
+        camada: document.getElementById("camada").value,
+        folga: document.getElementById("folga").value,
+        ladoBaixo: document.getElementById("ladoBaixo").value,
+        ladoAlto: document.getElementById("ladoAlto").value,
+        diferencaCota: document.getElementById("diferencaCota").value,
+        novaAltura: document.getElementById("novaAltura").value,
+        novaDist: document.getElementById("novaDist").value,
+        distFinal: document.getElementById("distFinal").value,
+        valorLadoBaixo: document.getElementById("valorLadoBaixo").value,
+        valorLadoAlto: document.getElementById("valorLadoAlto").value
+      };
 
-  <div class="row">
-    <div>
-      <label>Inclinação (%):</label>
-      <input type="number" id="inclinacao" step="0.1" placeholder="Ex: 50">
-    </div>
-    <div>
-      <label>Espessura da camada (m):</label>
-      <input type="number" id="camada" step="0.01" placeholder="Ex: 0.25">
-    </div>
-  </div>
+      try {
+        // ======= SUBSTITUA AQUI PELO LINK DO SEU WEB APP =======
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwxKkZO6-PP-gqgMokxmhwtJ6b63RyX3e1JJ1RHVfxrP1K8VjP7wGAS5IJq-Aiwu2Mj/exec";
 
-  <label>Folga da estaca (m):</label>
-  <input type="number" id="folga" step="0.01" placeholder="Ex: 0.20">
+        const response = await fetch(WEB_APP_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(dados)
+        });
 
-  <div class="row">
-    <div>
-      <label>Leitura lado baixo (m):</label>
-      <input type="number" id="ladoBaixo" step="0.01" placeholder="Ex: 100.25">
-    </div>
-    <div>
-      <label>Leitura lado alto (m):</label>
-      <input type="number" id="ladoAlto" step="0.01" placeholder="Ex: 101.30">
-    </div>
-  </div>
-
-  <button id="btnCalcular" onclick="handleCalcular()">Calcular</button>
-  <button id="btnSalvar" class="secondary" onclick="salvar()" disabled>Salvar na planilha</button>
-  <div class="small">Após calcular, clique em <strong>Salvar</strong> para gravar os dados na planilha online.</div>
-
-  <div class="resultado" id="resultado" style="display:none"></div>
-
-<script>
-  // Preencher data automática
-  (function setDate(){
-    const now = new Date();
-    const pad = n => String(n).padStart(2,'0');
-    const s = `${pad(now.getDate())}/${pad(now.getMonth()+1)}/${now.getFullYear()} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
-    document.getElementById('dataAtual').value = s;
-  })();
-
-  let ultimoResultado = null;
-
-  function validarCamposBasicos(vals) {
-    const required = ['altura','inclinacao','camada','folga','ladoBaixo','ladoAlto'];
-    for (const k of required) {
-      if (isNaN(vals[k])) return `Preencha corretamente o campo ${k}.`;
-    }
-    if (vals['inclinacao'] === 0) return 'Inclinação não pode ser zero.';
-    return null;
-  }
-
-  function calcularValores(vals) {
-    const diferencaCota = vals.ladoAlto - vals.ladoBaixo;
-    const novaAltura = vals.altura - vals.camada;
-    const novaDist = novaAltura / (vals.inclinacao / 100);
-    const distFinal = novaDist + vals.folga;
-    const valorLadoBaixo = vals.ladoBaixo - novaAltura;
-    const valorLadoAlto = vals.ladoAlto - novaAltura;
-
-    return { diferencaCota, novaAltura, novaDist, distFinal, valorLadoBaixo, valorLadoAlto };
-  }
-
-  function handleCalcular() {
-    const vals = {
-      altura: parseFloat(document.getElementById('altura').value),
-      inclinacao: parseFloat(document.getElementById('inclinacao').value),
-      camada: parseFloat(document.getElementById('camada').value),
-      folga: parseFloat(document.getElementById('folga').value),
-      ladoBaixo: parseFloat(document.getElementById('ladoBaixo').value),
-      ladoAlto: parseFloat(document.getElementById('ladoAlto').value)
-    };
-
-    const err = validarCamposBasicos(vals);
-    const resultDiv = document.getElementById('resultado');
-    if (err) {
-      resultDiv.style.display = 'block';
-      resultDiv.innerHTML = `<p style="color:red">${err}</p>`;
-      document.getElementById('btnSalvar').disabled = true;
-      ultimoResultado = null;
-      return;
-    }
-
-    const res = calcularValores(vals);
-    resultDiv.style.display = 'block';
-    resultDiv.innerHTML = `
-      <p><strong>Diferença de cota (Δh):</strong> ${res.diferencaCota.toFixed(3)} m</p>
-      <p><strong>Nova altura projetada:</strong> ${res.novaAltura.toFixed(3)} m</p>
-      <p><strong>Nova distância até o bordo:</strong> ${res.novaDist.toFixed(3)} m</p>
-      <p><strong>Distância final com folga:</strong> ${res.distFinal.toFixed(3)} m</p>
-      <p><strong>Valor lado baixo:</strong> ${res.valorLadoBaixo.toFixed(3)} m</p>
-      <p><strong>Valor lado alto:</strong> ${res.valorLadoAlto.toFixed(3)} m</p>
-    `;
-
-    ultimoResultado = {
-      data: document.getElementById('dataAtual').value,
-      estaca: document.getElementById('estaca').value || '',
-      pano: document.getElementById('pano').value || '',
-      ...vals,
-      ...res
-    };
-
-    document.getElementById('btnSalvar').disabled = false;
-  }
-
-  // Função de envio (com no-cors)
-  async function salvar() {
-    if (!ultimoResultado) return alert('Calcule antes de salvar.');
-
-    const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbwxKkZO6-PP-gqgMokxmhwtJ6b63RyX3e1JJ1RHVfxrP1K8VjP7wGAS5IJq-Aiwu2Mj/exec"; // <-- coloque seu link do Apps Script aqui
-
-    document.getElementById('btnSalvar').disabled = true;
-    document.getElementById('btnSalvar').innerText = 'Enviando...';
-
-    try {
-      await fetch(WEBAPP_URL, {
-        method: "POST",
-        mode: "no-cors",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(ultimoResultado)
-      });
-      alert("Dados enviados com sucesso!");
-    } catch (err) {
-      alert("Erro ao salvar: " + err.message);
-    }
-
-    document.getElementById('btnSalvar').innerText = 'Salvar na planilha';
-    document.getElementById('btnSalvar').disabled = true;
-  }
-</script>
-
+        const texto = await response.text();
+        alert("Resposta do servidor: " + texto);
+      } catch (err) {
+        alert("Erro ao enviar dados: " + err.message);
+      }
+    });
+  </script>
 </body>
 </html>
-
-
