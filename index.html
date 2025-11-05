@@ -34,3 +34,87 @@
       border-radius: 5px;
     }
     button {
+      margin-top: 20px;
+      width: 100%;
+      padding: 10px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    .result {
+      background: #e9f7ef;
+      padding: 15px;
+      margin-top: 20px;
+      border-radius: 5px;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Calculadora de Camadas</h1>
+
+    <label for="cotaMenor">Cota menor (m):</label>
+    <input type="number" id="cotaMenor" step="0.01">
+
+    <label for="cotaMaior">Cota maior (m):</label>
+    <input type="number" id="cotaMaior" step="0.01">
+
+    <label for="altura">Altura (m):</label>
+    <input type="number" id="altura" step="0.01">
+
+    <label for="distancia">Distância até o bordo (m):</label>
+    <input type="number" id="distancia" step="0.01">
+
+    <label for="inclinacao">Inclinação do projeto (%):</label>
+    <input type="number" id="inclinacao" step="0.01" value="50">
+
+    <label for="camada">Valor da camada (m):</label>
+    <input type="number" id="camada" step="0.01" value="0.25">
+
+    <label for="folga">Folga da estaca (m):</label>
+    <input type="number" id="folga" step="0.01" value="0.20">
+
+    <button onclick="calcular()">Calcular</button>
+
+    <div class="result" id="resultado"></div>
+  </div>
+
+  <script>
+    function calcular() {
+      const cotaMenor = parseFloat(document.getElementById('cotaMenor').value) || 0;
+      const cotaMaior = parseFloat(document.getElementById('cotaMaior').value) || 0;
+      const altura = parseFloat(document.getElementById('altura').value) || 0;
+      const distancia = parseFloat(document.getElementById('distancia').value) || 0;
+      const inclinacao = parseFloat(document.getElementById('inclinacao').value) || 0;
+      const camada = parseFloat(document.getElementById('camada').value) || 0;
+      const folga = parseFloat(document.getElementById('folga').value) || 0;
+
+      // Diferença de cota
+      const diferenca = cotaMaior - cotaMenor;
+
+      // Altura projetada
+      const novaAltura = altura - camada;
+
+      // Distância recalculada conforme inclinação
+      const novaDistancia = novaAltura / (inclinacao / 100);
+
+      // Ajuste da folga
+      const distanciaFinal = novaDistancia - folga;
+
+      document.getElementById('resultado').innerHTML = `
+        <strong>Diferença de cota (Δh):</strong> ${diferenca.toFixed(2)} m<br>
+        <strong>Nova altura projetada:</strong> ${novaAltura.toFixed(2)} m<br>
+        <strong>Nova distância até o bordo:</strong> ${novaDistancia.toFixed(2)} m<br>
+        <strong>Distância final com folga:</strong> ${distanciaFinal.toFixed(2)} m
+      `;
+    }
+  </script>
+</body>
+</html>
