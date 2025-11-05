@@ -14,48 +14,13 @@
       border-radius: 12px;
       box-shadow: 0 0 15px rgba(0,0,0,0.1);
     }
-    h1 {
-      text-align: center;
-      color: #004d7a;
-    }
-    label {
-      display: block;
-      margin-top: 12px;
-      font-weight: bold;
-    }
-    input {
-      width: 100%;
-      padding: 8px;
-      margin-top: 5px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      font-size: 14px;
-    }
-    button {
-      margin-top: 20px;
-      padding: 10px 15px;
-      width: 100%;
-      background: #0077b6;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      font-size: 16px;
-      cursor: pointer;
-    }
-    button:hover {
-      background: #0096c7;
-    }
-    .resultado {
-      margin-top: 25px;
-      background: #e3f2fd;
-      padding: 15px;
-      border-radius: 8px;
-      border-left: 4px solid #0077b6;
-    }
-    .resultado p {
-      margin: 6px 0;
-      font-size: 15px;
-    }
+    h1 { text-align: center; color: #004d7a; }
+    label { display: block; margin-top: 12px; font-weight: bold; }
+    input { width: 100%; padding: 8px; margin-top: 5px; border-radius: 6px; border: 1px solid #ccc; font-size: 14px; }
+    button { margin-top: 20px; padding: 10px 15px; width: 100%; background: #0077b6; color: white; border: none; border-radius: 6px; font-size: 16px; cursor: pointer; }
+    button:hover { background: #0096c7; }
+    .resultado { margin-top: 25px; background: #e3f2fd; padding: 15px; border-radius: 8px; border-left: 4px solid #0077b6; }
+    .resultado p { margin: 6px 0; font-size: 15px; }
   </style>
 </head>
 <body>
@@ -63,22 +28,22 @@
   <h1>Calculadora de Camadas</h1>
 
   <label>Altura medida (m):</label>
-  <input type="number" id="altura" step="0.01">
+  <input type="number" id="altura" step="0.01" placeholder="Ex: 1.00">
 
   <label>Inclinação (%):</label>
-  <input type="number" id="inclinacao" step="0.1">
+  <input type="number" id="inclinacao" step="0.1" placeholder="Ex: 50">
 
   <label>Espessura da camada (m):</label>
-  <input type="number" id="camada" step="0.01">
+  <input type="number" id="camada" step="0.01" placeholder="Ex: 0.25">
 
   <label>Folga da estaca (m):</label>
-  <input type="number" id="folga" step="0.01">
+  <input type="number" id="folga" step="0.01" placeholder="Ex: 0.20">
 
   <label>Leitura lado baixo (m):</label>
-  <input type="number" id="ladoBaixo" step="0.01">
+  <input type="number" id="ladoBaixo" step="0.01" placeholder="Ex: 100.25">
 
   <label>Leitura lado alto (m):</label>
-  <input type="number" id="ladoAlto" step="0.01">
+  <input type="number" id="ladoAlto" step="0.01" placeholder="Ex: 101.30">
 
   <button onclick="calcular()">Calcular</button>
 
@@ -93,13 +58,18 @@
       const ladoBaixo = parseFloat(document.getElementById('ladoBaixo').value);
       const ladoAlto = parseFloat(document.getElementById('ladoAlto').value);
 
-      if (isNaN(altura) || isNaN(inclinacao) || isNaN(camada) || isNaN(folga) || isNaN(ladoBaixo) || isNaN(ladoAlto)) {
-        alert("Por favor, preencha todos os campos numéricos.");
+      // validações básicas
+      if ([altura, inclinacao, camada, folga, ladoBaixo, ladoAlto].some(v => isNaN(v))) {
+        document.getElementById('resultado').innerHTML = '<p style="color:red">Por favor, preencha todos os campos numéricos.</p>';
+        return;
+      }
+      if (inclinacao === 0) {
+        document.getElementById('resultado').innerHTML = '<p style="color:red">Inclinação não pode ser zero.</p>';
         return;
       }
 
-      // Diferença de cota (ladoBaixo - ladoAlto)
-      const diferencaCota = ladoBaixo - ladoAlto;
+      // Diferença de cota (ladoAlto - ladoBaixo) — geralmente positivo
+      const diferencaCota = ladoAlto - ladoBaixo;
 
       // Nova altura projetada
       const novaAltura = altura - camada;
@@ -116,4 +86,14 @@
 
       document.getElementById('resultado').innerHTML = `
         <p><strong>Diferença de cota (Δh):</strong> ${diferencaCota.toFixed(2)} m</p>
-        <p><strong>Nova altura projetada:</strong> ${novaAltura.toFixed(2)} m</p
+        <p><strong>Nova altura projetada:</strong> ${novaAltura.toFixed(2)} m</p>
+        <p><strong>Nova distância até o bordo:</strong> ${novaDist.toFixed(2)} m</p>
+        <p><strong>Distância final com folga:</strong> ${distFinal.toFixed(2)} m</p>
+        <p><strong>Valor lado baixo:</strong> ${valorLadoBaixo.toFixed(2)} m</p>
+        <p><strong>Valor lado alto:</strong> ${valorLadoAlto.toFixed(2)} m</p>
+      `;
+    }
+  </script>
+
+</body>
+</html>
