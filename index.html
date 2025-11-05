@@ -1,99 +1,202 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Calculadora de Camadas</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      max-width: 600px;
-      margin: 40px auto;
-      background: #f7f9fb;
-      padding: 20px 30px;
-      border-radius: 12px;
-      box-shadow: 0 0 15px rgba(0,0,0,0.1);
-    }
-    h1 { text-align: center; color: #004d7a; }
-    label { display: block; margin-top: 12px; font-weight: bold; }
-    input { width: 100%; padding: 8px; margin-top: 5px; border-radius: 6px; border: 1px solid #ccc; font-size: 14px; }
-    button { margin-top: 20px; padding: 10px 15px; width: 100%; background: #0077b6; color: white; border: none; border-radius: 6px; font-size: 16px; cursor: pointer; }
-    button:hover { background: #0096c7; }
-    .resultado { margin-top: 25px; background: #e3f2fd; padding: 15px; border-radius: 8px; border-left: 4px solid #0077b6; }
-    .resultado p { margin: 6px 0; font-size: 15px; }
+    body { font-family: Arial, sans-serif; max-width: 700px; margin: 30px auto; background:#f7f9fb; padding:20px; border-radius:10px; box-shadow:0 0 12px rgba(0,0,0,0.08); }
+    h1{ text-align:center;color:#004d7a;margin-bottom:8px; }
+    label{ display:block; margin-top:12px; font-weight:600; }
+    input, select { width:100%; padding:8px; margin-top:6px; box-sizing:border-box; border-radius:6px; border:1px solid #cfcfcf; font-size:14px; }
+    .row { display:flex; gap:12px; }
+    .row > div { flex:1; }
+    button { margin-top:14px; width:100%; padding:10px; background:#0077b6; color:#fff; border:none; border-radius:6px; font-size:16px; cursor:pointer; }
+    button.secondary { background:#28a745; margin-top:8px; }
+    button:disabled { opacity:0.6; cursor:not-allowed; }
+    .resultado { margin-top:18px; background:#e9f7ff; padding:12px; border-radius:8px; border-left:4px solid #0077b6; }
+    .resultado p{ margin:6px 0; font-size:15px; }
+    .small { font-size:13px; color:#666; margin-top:6px; }
   </style>
 </head>
 <body>
 
   <h1>Calculadora de Camadas</h1>
 
+  <!-- Dados de identificação -->
+  <div class="row">
+    <div>
+      <label>Data (automática):</label>
+      <input type="text" id="dataAtual" readonly>
+    </div>
+    <div>
+      <label>Estaca:</label>
+      <input type="text" id="estaca" placeholder="Ex: 12+345">
+    </div>
+  </div>
+
+  <label>Pano (marcação):</label>
+  <input type="text" id="pano" placeholder="Ex: Pano 25">
+
   <label>Altura medida (m):</label>
   <input type="number" id="altura" step="0.01" placeholder="Ex: 1.00">
 
-  <label>Inclinação (%):</label>
-  <input type="number" id="inclinacao" step="0.1" placeholder="Ex: 50">
-
-  <label>Espessura da camada (m):</label>
-  <input type="number" id="camada" step="0.01" placeholder="Ex: 0.25">
+  <div class="row">
+    <div>
+      <label>Inclinação (%):</label>
+      <input type="number" id="inclinacao" step="0.1" placeholder="Ex: 50">
+    </div>
+    <div>
+      <label>Espessura da camada (m):</label>
+      <input type="number" id="camada" step="0.01" placeholder="Ex: 0.25">
+    </div>
+  </div>
 
   <label>Folga da estaca (m):</label>
   <input type="number" id="folga" step="0.01" placeholder="Ex: 0.20">
 
-  <label>Leitura lado baixo (m):</label>
-  <input type="number" id="ladoBaixo" step="0.01" placeholder="Ex: 100.25">
+  <div class="row">
+    <div>
+      <label>Leitura lado baixo (m):</label>
+      <input type="number" id="ladoBaixo" step="0.01" placeholder="Ex: 100.25">
+    </div>
+    <div>
+      <label>Leitura lado alto (m):</label>
+      <input type="number" id="ladoAlto" step="0.01" placeholder="Ex: 101.30">
+    </div>
+  </div>
 
-  <label>Leitura lado alto (m):</label>
-  <input type="number" id="ladoAlto" step="0.01" placeholder="Ex: 101.30">
+  <button id="btnCalcular" onclick="handleCalcular()">Calcular</button>
+  <button id="btnSalvar" class="secondary" onclick="salvar()" disabled>Salvar na planilha</button>
+  <div class="small">Após calcular, clique em <strong>Salvar</strong> para gravar os dados na planilha online.</div>
 
-  <button onclick="calcular()">Calcular</button>
+  <div class="resultado" id="resultado" style="display:none"></div>
 
-  <div class="resultado" id="resultado"></div>
+<script>
+  // Preencher data automática
+  (function setDate(){
+    const now = new Date();
+    // formato dd/mm/yyyy HH:MM
+    const pad = n => String(n).padStart(2,'0');
+    const s = `${pad(now.getDate())}/${pad(now.getMonth()+1)}/${now.getFullYear()} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
+    document.getElementById('dataAtual').value = s;
+  })();
 
-  <script>
-    function calcular() {
-      const altura = parseFloat(document.getElementById('altura').value);
-      const inclinacao = parseFloat(document.getElementById('inclinacao').value);
-      const camada = parseFloat(document.getElementById('camada').value);
-      const folga = parseFloat(document.getElementById('folga').value);
-      const ladoBaixo = parseFloat(document.getElementById('ladoBaixo').value);
-      const ladoAlto = parseFloat(document.getElementById('ladoAlto').value);
+  // guarda último resultado para salvar
+  let ultimoResultado = null;
 
-      // validações básicas
-      if ([altura, inclinacao, camada, folga, ladoBaixo, ladoAlto].some(v => isNaN(v))) {
-        document.getElementById('resultado').innerHTML = '<p style="color:red">Por favor, preencha todos os campos numéricos.</p>';
-        return;
+  function validarCamposBasicos(vals) {
+    // Verifica NaN e inclinação não zero
+    const required = ['altura','inclinacao','camada','folga','ladoBaixo','ladoAlto'];
+    for (const k of required) {
+      if (isNaN(vals[k])) {
+        return `Preencha corretamente o campo ${k}.`;
       }
-      if (inclinacao === 0) {
-        document.getElementById('resultado').innerHTML = '<p style="color:red">Inclinação não pode ser zero.</p>';
-        return;
-      }
-
-      // Diferença de cota (ladoAlto - ladoBaixo) — geralmente positivo
-      const diferencaCota = ladoAlto - ladoBaixo;
-
-      // Nova altura projetada
-      const novaAltura = altura - camada;
-
-      // Nova distância até o bordo (calculada pela proporção da inclinação)
-      const novaDist = novaAltura / (inclinacao / 100);
-
-      // Distância final com folga (somando a folga)
-      const distFinal = novaDist + folga;
-
-      // Valor das cotas ajustadas (Leitura - nova altura)
-      const valorLadoBaixo = ladoBaixo - novaAltura;
-      const valorLadoAlto = ladoAlto - novaAltura;
-
-      document.getElementById('resultado').innerHTML = `
-        <p><strong>Diferença de cota (Δh):</strong> ${diferencaCota.toFixed(2)} m</p>
-        <p><strong>Nova altura projetada:</strong> ${novaAltura.toFixed(2)} m</p>
-        <p><strong>Nova distância até o bordo:</strong> ${novaDist.toFixed(2)} m</p>
-        <p><strong>Distância final com folga:</strong> ${distFinal.toFixed(2)} m</p>
-        <p><strong>Valor lado baixo:</strong> ${valorLadoBaixo.toFixed(2)} m</p>
-        <p><strong>Valor lado alto:</strong> ${valorLadoAlto.toFixed(2)} m</p>
-      `;
     }
-  </script>
+    if (vals['inclinacao'] === 0) return 'Inclinação não pode ser zero.';
+    return null;
+  }
+
+  function calcularValores(vals) {
+    // vals: objeto com altura,inclinacao,camada,folga,ladoBaixo,ladoAlto
+    const diferencaCota = vals.ladoAlto - vals.ladoBaixo; // maior - menor
+    const novaAltura = vals.altura - vals.camada;
+    const novaDist = novaAltura / (vals.inclinacao / 100);
+    const distFinal = novaDist + vals.folga;
+    const valorLadoBaixo = vals.ladoBaixo - novaAltura;
+    const valorLadoAlto = vals.ladoAlto - novaAltura;
+
+    return {
+      diferencaCota, novaAltura, novaDist, distFinal, valorLadoBaixo, valorLadoAlto
+    };
+  }
+
+  function handleCalcular() {
+    // lê entradas
+    const vals = {
+      altura: parseFloat(document.getElementById('altura').value),
+      inclinacao: parseFloat(document.getElementById('inclinacao').value),
+      camada: parseFloat(document.getElementById('camada').value),
+      folga: parseFloat(document.getElementById('folga').value),
+      ladoBaixo: parseFloat(document.getElementById('ladoBaixo').value),
+      ladoAlto: parseFloat(document.getElementById('ladoAlto').value)
+    };
+
+    const err = validarCamposBasicos(vals);
+    if (err) {
+      document.getElementById('resultado').style.display = 'block';
+      document.getElementById('resultado').innerHTML = `<p style="color:red">${err}</p>`;
+      document.getElementById('btnSalvar').disabled = true;
+      ultimoResultado = null;
+      return;
+    }
+
+    const res = calcularValores(vals);
+    // montar exibição
+    document.getElementById('resultado').style.display = 'block';
+    document.getElementById('resultado').innerHTML = `
+      <p><strong>Diferença de cota (Δh):</strong> ${res.diferencaCota.toFixed(3)} m</p>
+      <p><strong>Nova altura projetada:</strong> ${res.novaAltura.toFixed(3)} m</p>
+      <p><strong>Nova distância até o bordo:</strong> ${res.novaDist.toFixed(3)} m</p>
+      <p><strong>Distância final com folga:</strong> ${res.distFinal.toFixed(3)} m</p>
+      <p><strong>Valor lado baixo:</strong> ${res.valorLadoBaixo.toFixed(3)} m</p>
+      <p><strong>Valor lado alto:</strong> ${res.valorLadoAlto.toFixed(3)} m</p>
+    `;
+    // salvar objeto completo para enviar depois
+    ultimoResultado = {
+      data: document.getElementById('dataAtual').value,
+      estaca: document.getElementById('estaca').value || '',
+      pano: document.getElementById('pano').value || '',
+      altura: vals.altura,
+      inclinacao: vals.inclinacao,
+      camada: vals.camada,
+      folga: vals.folga,
+      ladoBaixo: vals.ladoBaixo,
+      ladoAlto: vals.ladoAlto,
+      diferencaCota: res.diferencaCota,
+      novaAltura: res.novaAltura,
+      novaDist: res.novaDist,
+      distFinal: res.distFinal,
+      valorLadoBaixo: res.valorLadoBaixo,
+      valorLadoAlto: res.valorLadoAlto
+    };
+    // habilita botão salvar
+    document.getElementById('btnSalvar').disabled = false;
+  }
+
+  // Função salvar: envia via POST para o Apps Script Web App
+  async function salvar() {
+    if (!ultimoResultado) {
+      alert('Calcule antes de salvar.');
+      return;
+    }
+
+    const WEBAPP_URL = 'URL_DO_SEU_WEBAPP_AQUI'; // <<< substitua pela URL do seu Apps Script web app
+
+    document.getElementById('btnSalvar').disabled = true;
+    document.getElementById('btnSalvar').innerText = 'Salvando...';
+
+    try {
+      const resp = await fetch(WEBAPP_URL, {
+        method: 'POST',
+        mode: 'cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(ultimoResultado)
+      });
+      const text = await resp.text();
+      if (!resp.ok) throw new Error(text || resp.statusText);
+      alert('Dados salvos com sucesso na planilha.');
+      // opcional: limpar últimoResultado e botão
+      ultimoResultado = null;
+      document.getElementById('btnSalvar').innerText = 'Salvar na planilha';
+      document.getElementById('btnSalvar').disabled = true;
+    } catch (err) {
+      alert('Erro ao salvar: ' + err.message);
+      document.getElementById('btnSalvar').innerText = 'Salvar na planilha';
+      document.getElementById('btnSalvar').disabled = false;
+    }
+  }
+</script>
 
 </body>
 </html>
