@@ -97,44 +97,26 @@
     </div>
   </div>
 
-  <button id="btnCalcular" onclick="handleCalcular()">Calcular</button>
-  <button id="btnSalvar" class="secondary" onclick="salvar()" disabled>Salvar na planilha</button>
+  <button id="btnCalcular">Calcular</button>
+  <button id="btnSalvar" class="secondary" disabled>Salvar na planilha</button>
   <div class="small">Após calcular, clique em <strong>Salvar</strong> para gravar os dados na planilha online.</div>
 
   <div class="resultado" id="resultado" style="display:none"></div>
 
 <script>
-  // Preencher data automática
-  (function setDate(){
-    const now = new Date();
-    const pad = n => String(n).padStart(2,'0');
-    const s = `${pad(now.getDate())}/${pad(now.getMonth()+1)}/${now.getFullYear()} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
-    document.getElementById('dataAtual').value = s;
-  })();
+  // === DATA AUTOMÁTICA ===
+  function atualizarData() {
+    const agora = new Date();
+    const formatar = n => String(n).padStart(2, '0');
+    const dataStr = `${formatar(agora.getDate())}/${formatar(agora.getMonth()+1)}/${agora.getFullYear()} ${formatar(agora.getHours())}:${formatar(agora.getMinutes())}`;
+    document.getElementById('dataAtual').value = dataStr;
+  }
+  atualizarData();
 
   let ultimoResultado = null;
 
-  function validarCamposBasicos(vals) {
-    const required = ['altura','inclinacao','camada','folga','ladoBaixo','ladoAlto'];
-    for (const k of required) {
-      if (isNaN(vals[k])) return `Preencha corretamente o campo ${k}.`;
-    }
-    if (vals['inclinacao'] === 0) return 'Inclinação não pode ser zero.';
-    return null;
-  }
-
-  function calcularValores(vals) {
-    const diferencaCota = vals.ladoAlto - vals.ladoBaixo;
-    const novaAltura = vals.altura - vals.camada;
-    const novaDist = novaAltura / (vals.inclinacao / 100);
-    const distFinal = novaDist + vals.folga;
-    const valorLadoBaixo = vals.ladoBaixo - novaAltura;
-    const valorLadoAlto = vals.ladoAlto - novaAltura;
-
-    return { diferencaCota, novaAltura, novaDist, distFinal, valorLadoBaixo, valorLadoAlto };
-  }
-
-  function handleCalcular() {
+  // === CÁLCULOS ===
+  document.getElementById('btnCalcular').addEventListener('click', () => {
     const vals = {
       altura: parseFloat(document.getElementById('altura').value),
       inclinacao: parseFloat(document.getElementById('inclinacao').value),
@@ -144,25 +126,34 @@
       ladoAlto: parseFloat(document.getElementById('ladoAlto').value)
     };
 
-    const err = validarCamposBasicos(vals);
-    const resultDiv = document.getElementById('resultado');
-    if (err) {
-      resultDiv.style.display = 'block';
-      resultDiv.innerHTML = `<p style="color:red">${err}</p>`;
-      document.getElementById('btnSalvar').disabled = true;
-      ultimoResultado = null;
+    if (Object.values(vals).some(v => isNaN(v))) {
+      alert('Preencha todos os campos numéricos corretamente!');
       return;
     }
 
-    const res = calcularValores(vals);
+    if (vals.inclinacao === 0) {
+      alert('A inclinação não pode ser zero.');
+      return;
+    }
+
+    // Fórmulas
+    const diferencaCota = vals.ladoAlto - vals.ladoBaixo;
+    const novaAltura = vals.altura - vals.camada;
+    const novaDist = novaAltura / (vals.inclinacao / 100);
+    const distFinal = novaDist + vals.folga;
+    const valorLadoBaixo = vals.ladoBaixo - novaAltura;
+    const valorLadoAlto = vals.ladoAlto - novaAltura;
+
+    // Exibir resultados
+    const resultDiv = document.getElementById('resultado');
     resultDiv.style.display = 'block';
     resultDiv.innerHTML = `
-      <p><strong>Diferença de cota (Δh):</strong> ${res.diferencaCota.toFixed(3)} m</p>
-      <p><strong>Nova altura projetada:</strong> ${res.novaAltura.toFixed(3)} m</p>
-      <p><strong>Nova distância até o bordo:</strong> ${res.novaDist.toFixed(3)} m</p>
-      <p><strong>Distância final com folga:</strong> ${res.distFinal.toFixed(3)} m</p>
-      <p><strong>Valor lado baixo:</strong> ${res.valorLadoBaixo.toFixed(3)} m</p>
-      <p><strong>Valor lado alto:</strong> ${res.valorLadoAlto.toFixed(3)} m</p>
+      <p><strong>Diferença de cota (Δh):</strong> ${diferencaCota.toFixed(3)} m</p>
+      <p><strong>Nova altura projetada:</strong> ${novaAltura.toFixed(3)} m</p>
+      <p><strong>Nova distância até o bordo:</strong> ${novaDist.toFixed(3)} m</p>
+      <p><strong>Distância final com folga:</strong> ${distFinal.toFixed(3)} m</p>
+      <p><strong>Valor lado baixo:</strong> ${valorLadoBaixo.toFixed(3)} m</p>
+      <p><strong>Valor lado alto:</strong> ${valorLadoAlto.toFixed(3)} m</p>
     `;
 
     ultimoResultado = {
@@ -170,44 +161,48 @@
       estaca: document.getElementById('estaca').value || '',
       pano: document.getElementById('pano').value || '',
       ...vals,
-      ...res
+      diferencaCota,
+      novaAltura,
+      novaDist,
+      distFinal,
+      valorLadoBaixo,
+      valorLadoAlto
     };
 
     document.getElementById('btnSalvar').disabled = false;
-  }
+  });
 
-  async function salvar() {
-  if (!ultimoResultado) {
-    alert('Calcule antes de salvar.');
-    return;
-  }
+  // === SALVAR NA PLANILHA ===
+  document.getElementById('btnSalvar').addEventListener('click', async () => {
+    if (!ultimoResultado) return alert('Você precisa calcular antes de salvar.');
 
-  const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbztvHF1hL7fRdYSVRJGxV5ue6gC9UFCgsURLFU02foN_iyI2mozC6o0e_iSfh01-IR0hg/exec";
+    const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbztvHF1hL7fRdYSVRJGxV5ue6gC9UFCgsURLFU02foN_iyI2mozC6o0e_iSfh01-IR0hg/exec";
 
-  document.getElementById('btnSalvar').disabled = true;
-  document.getElementById('btnSalvar').innerText = 'Enviando...';
+    const btnSalvar = document.getElementById('btnSalvar');
+    btnSalvar.disabled = true;
+    btnSalvar.innerText = 'Enviando...';
 
-  try {
-    await fetch(WEBAPP_URL, {
-      method: 'POST',
-      mode: 'no-cors', // impede bloqueio por CORS
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify(ultimoResultado)
-    });
+    try {
+      const resposta = await fetch(WEBAPP_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(ultimoResultado)
+      });
 
-    alert('✅ Dados enviados com sucesso! (Pode não aparecer resposta, mas foi salvo na planilha)');
-  } catch (err) {
-    alert('Erro ao salvar: ' + err.message);
-  }
+      const data = await resposta.json();
+      if (data.status === 'ok') {
+        alert('Dados enviados com sucesso!');
+      } else {
+        throw new Error(data.mensagem || 'Erro desconhecido.');
+      }
+    } catch (err) {
+      alert("Erro ao salvar: " + err.message);
+    }
 
-  document.getElementById('btnSalvar').innerText = 'Salvar na planilha';
-  document.getElementById('btnSalvar').disabled = true;
-}
-
-  }
+    btnSalvar.innerText = 'Salvar na planilha';
+    btnSalvar.disabled = true;
+  });
 </script>
 
 </body>
 </html>
-
-
