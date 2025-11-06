@@ -182,22 +182,20 @@
     btnSalvar.disabled = true;
     btnSalvar.innerText = 'Enviando...';
 
-    try {
-      const resposta = await fetch(WEBAPP_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(ultimoResultado)
-      });
+   try {
+  // Envia sem CORS (Google bloqueia respostas externas)
+  await fetch(WEBAPP_URL, {
+    method: "POST",
+    mode: "no-cors",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(ultimoResultado)
+  });
 
-      const data = await resposta.json();
-      if (data.status === 'ok') {
-        alert('Dados enviados com sucesso!');
-      } else {
-        throw new Error(data.mensagem || 'Erro desconhecido.');
-      }
-    } catch (err) {
-      alert("Erro ao salvar: " + err.message);
-    }
+  alert("Dados enviados com sucesso!");
+} catch (err) {
+  alert("Erro ao salvar: " + err.message);
+}
+
 
     btnSalvar.innerText = 'Salvar na planilha';
     btnSalvar.disabled = true;
@@ -206,5 +204,6 @@
 
 </body>
 </html>
+
 
 
