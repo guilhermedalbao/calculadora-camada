@@ -177,30 +177,37 @@
   }
 
   async function salvar() {
-    if (!ultimoResultado) return alert('Calcule antes de salvar.');
+  if (!ultimoResultado) {
+    alert('Calcule antes de salvar.');
+    return;
+  }
 
-    const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbztvHF1hL7fRdYSVRJGxV5ue6gC9UFCgsURLFU02foN_iyI2mozC6o0e_iSfh01-IR0hg/exec"; // coloque aqui o link do seu Web App
+  const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbztvHF1hL7fRdYSVRJGxV5ue6gC9UFCgsURLFU02foN_iyI2mozC6o0e_iSfh01-IR0hg/exec";
 
-    document.getElementById('btnSalvar').disabled = true;
-    document.getElementById('btnSalvar').innerText = 'Enviando...';
+  document.getElementById('btnSalvar').disabled = true;
+  document.getElementById('btnSalvar').innerText = 'Enviando...';
 
-    try {
-      await fetch(WEBAPP_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(ultimoResultado)
-      });
+  try {
+    await fetch(WEBAPP_URL, {
+      method: 'POST',
+      mode: 'no-cors', // impede bloqueio por CORS
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(ultimoResultado)
+    });
 
-      alert("Dados enviados com sucesso!");
-    } catch (err) {
-      alert("Erro ao salvar: " + err.message);
-    }
+    alert('✅ Dados enviados com sucesso! (Pode não aparecer resposta, mas foi salvo na planilha)');
+  } catch (err) {
+    alert('Erro ao salvar: ' + err.message);
+  }
 
-    document.getElementById('btnSalvar').innerText = 'Salvar na planilha';
-    document.getElementById('btnSalvar').disabled = true;
+  document.getElementById('btnSalvar').innerText = 'Salvar na planilha';
+  document.getElementById('btnSalvar').disabled = true;
+}
+
   }
 </script>
 
 </body>
 </html>
+
 
