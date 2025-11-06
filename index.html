@@ -88,12 +88,12 @@
 
   <div class="row">
     <div>
-      <label>Leitura lado baixo (m):</label>
-      <input type="number" id="ladoBaixo" step="0.01" placeholder="Ex: 100.25">
+      <label>Leitura bordo esquerdo (m):</label>
+      <input type="number" id="bordoEsquerdo" step="0.01" placeholder="Ex: 100.25">
     </div>
     <div>
-      <label>Leitura lado alto (m):</label>
-      <input type="number" id="ladoAlto" step="0.01" placeholder="Ex: 101.30">
+      <label>Leitura bordo direito (m):</label>
+      <input type="number" id="bordoDireito" step="0.01" placeholder="Ex: 101.30">
     </div>
   </div>
 
@@ -122,8 +122,8 @@
       inclinacao: parseFloat(document.getElementById('inclinacao').value),
       camada: parseFloat(document.getElementById('camada').value),
       folga: parseFloat(document.getElementById('folga').value),
-      ladoBaixo: parseFloat(document.getElementById('ladoBaixo').value),
-      ladoAlto: parseFloat(document.getElementById('ladoAlto').value)
+      bordoEsquerdo: parseFloat(document.getElementById('bordoEsquerdo').value),
+      bordoDireito: parseFloat(document.getElementById('bordoDireito').value)
     };
 
     if (Object.values(vals).some(v => isNaN(v))) {
@@ -137,12 +137,12 @@
     }
 
     // Fórmulas
-    const diferencaCota = vals.ladoAlto - vals.ladoBaixo;
+    const diferencaCota = vals.bordoDireito - vals.bordoEsquerdo;
     const novaAltura = vals.altura - vals.camada;
     const novaDist = novaAltura / (vals.inclinacao / 100);
     const distFinal = novaDist + vals.folga;
-    const valorLadoBaixo = vals.ladoBaixo - novaAltura;
-    const valorLadoAlto = vals.ladoAlto - novaAltura;
+    const valorBordoEsquerdo = vals.bordoEsquerdo - novaAltura;
+    const valorBordoDireito = vals.bordoDireito - novaAltura;
 
     // Exibir resultados
     const resultDiv = document.getElementById('resultado');
@@ -152,8 +152,8 @@
       <p><strong>Nova altura projetada:</strong> ${novaAltura.toFixed(3)} m</p>
       <p><strong>Nova distância até o bordo:</strong> ${novaDist.toFixed(3)} m</p>
       <p><strong>Distância final com folga:</strong> ${distFinal.toFixed(3)} m</p>
-      <p><strong>Valor lado baixo:</strong> ${valorLadoBaixo.toFixed(3)} m</p>
-      <p><strong>Valor lado alto:</strong> ${valorLadoAlto.toFixed(3)} m</p>
+      <p><strong>Valor bordo esquerdo:</strong> ${valorBordoEsquerdo.toFixed(3)} m</p>
+      <p><strong>Valor bordo direito:</strong> ${valorBordoDireito.toFixed(3)} m</p>
     `;
 
     ultimoResultado = {
@@ -165,8 +165,8 @@
       novaAltura,
       novaDist,
       distFinal,
-      valorLadoBaixo,
-      valorLadoAlto
+      valorBordoEsquerdo,
+      valorBordoDireito
     };
 
     document.getElementById('btnSalvar').disabled = false;
@@ -182,20 +182,17 @@
     btnSalvar.disabled = true;
     btnSalvar.innerText = 'Enviando...';
 
-   try {
-  // Envia sem CORS (Google bloqueia respostas externas)
-  await fetch(WEBAPP_URL, {
-    method: "POST",
-    mode: "no-cors",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(ultimoResultado)
-  });
-
-  alert("Dados enviados com sucesso!");
-} catch (err) {
-  alert("Erro ao salvar: " + err.message);
-}
-
+    try {
+      await fetch(WEBAPP_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(ultimoResultado)
+      });
+      alert("Dados enviados com sucesso!");
+    } catch (err) {
+      alert("Erro ao salvar: " + err.message);
+    }
 
     btnSalvar.innerText = 'Salvar na planilha';
     btnSalvar.disabled = true;
@@ -204,9 +201,3 @@
 
 </body>
 </html>
-
-
-
-
-
-
